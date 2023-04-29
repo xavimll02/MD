@@ -1,0 +1,2 @@
+# MD
+Mineria de Dades
