@@ -1,0 +1,42 @@
+setwd("C:/Users/xavim/Desktop")
+dd <- read.csv("Airbnb_Open_Data.csv", header=T, stringsAsFactors=TRUE)
+
+n<-dim(dd)[1]
+n
+K<-dim(dd)[2]
+K
+
+names(dd)
+summary(dd)
+attach(dd)
+sapply(dd, class)
+
+#declare factors
+
+host_identity_verified <- as.factor(host_identity_verified)
+host.name <- as.factor(host.name)
+neighbourhood.group <- as.factor(neighbourhood.group)
+neighbourhood <- as.factor(neighbourhood)
+instant_bookable <- as.factor(instant_bookable)
+cancellation_policy <- as.factor(cancellation_policy)
+room.type <- as.factor(room.type)
+last.review <- as.factor(last.review)
+
+
+price     <- as.numeric(price)
+service.fee <- as.numeric(service.fee)
+last.review <- as.Date(last.review, format ="%m/%d/%Y")
+
+dd[,3] <- host_identity_verified
+dd[,4] <- host.name
+dd[,5] <- neighbourhood.group
+dd[,6] <- neighbourhood
+dd[,9] <- instant_bookable
+dd[,10] <- cancellation_policy
+dd[,11] <- room.type
+dd[,17]   <-last.review
+dd[,13]   <-price
+dd[,14]   <-service.fee
+dd[,17]   <-last.review
+
+write.table(dd, file = "Airbnb_Open_Data.csv", sep = ",", na = "NA", dec = ".", row.names = FALSE, col.names = TRUE)

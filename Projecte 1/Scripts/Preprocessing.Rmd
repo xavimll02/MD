@@ -1,0 +1,126 @@
+#  READING CREDSCO.CSV. NOTE: Change the path of the file for the proper one in your computer
+
+#Note: Take care to use "/" fo the directory file. "\" provides errors
+
+setwd("C:/Users/xavim/Desktop/md")
+dd <- read.csv("Airbnb_Open_Data.csv", header=T)
+attach(dd)
+boxplot(minimum.nights)
+#Missing data treatment
+
+#Detect
+names(dd)
+table(dd[,1]=="")
+table(dd[,2]=="")
+table(dd[,3]=="Unk_ver")
+table(dd[,4]=="Unk_hName")
+table(dd[,5]=="Unk_neighG")
+table(dd[,6]=="Unk_neigh")
+table(is.na(dd[ , 7]))
+table(is.na(dd[ , 8]))
+table(dd[ ,9]=="Unk_instB")
+table(dd[,10]=="Unk_cPolicy")
+table(dd[,11]=="")
+table(is.na(dd[ , 12]))
+table(dd[,13]=="")
+table(dd[,14]=="")
+table(is.na(dd[ , 15]))
+table(is.na(dd[ , 16]))
+table(dd[ , 17]=="Unk_lReview")
+table(is.na(dd[ , 18]))
+table(is.na(dd[ , 19]))
+table(is.na(dd[ , 20]))
+table(is.na(dd[ , 21]))
+
+#For non structural missings in qualitative variables, just keep as a new modality. Only if required inpute or describe appart
+#you already have from previous treatment of factors
+levels(host_identity_verified)<-c(levels(host_identity_verified),"Unk_ver")
+host_identity_verified[host_identity_verified==""]<-"Unk_ver"
+levels(instant_bookable)<-c(levels(instant_bookable),"Unk_instB")
+instant_bookable[is.na(instant_bookable)]<-"Unk_instB"
+levels(last.review)<-c(levels(last.review),"Unk_lReview")
+last.review[is.na(last.review)]<-"Unk_lReview"
+
+host.name[host.name==""]<-"Unk_hName"
+levels(host.name)<-c(levels(host.name),"Unk_hName")
+neighbourhood.group[neighbourhood.group==""]<-"Unk_neighG"
+levels(neighbourhood.group)<-c(levels(neighbourhood.group),"Unk_neighG")
+neighbourhood[neighbourhood==""]<-"Unk_neigh"
+levels(neighbourhood)<-c(levels(neighbourhood),"Unk_neigh")
+cancellation_policy[cancellation_policy==""]<-"Unk_cPolicy"
+levels(cancellation_policy)<-c(levels(cancellation_policy),"Unk_cPolicy")
+
+
+dd[,9]=instant_bookable
+dd[,17]=last.review
+# Recode missing data to NA
+
+host_identity_verified[host_identity_verified==""] <- NA
+host.name[host.name==""] <- NA
+neighbourhood.group[neighbourhood.group==""] <- NA
+neighbourhood[neighbourhood==""] <- NA
+cancellation_policy[cancellation_policy==""]<- NA
+
+#How to test randomness of missings? Test de little (ens el saltem)
+
+hist(dd[,8])
+summary(dd[,8])
+sd(dd[,8])
+sd(dd[,8], na.rm=TRUE)
+
+#start substituting the structural missing values.
+#with remaining, impute: Knn, MIMMI, MICE (multiple imputation, only if you know well)
+
+# IMPUTATION By THE 1NN
+
+library(class)
+
+# FOR EVERY INDIVIDUAL WITH MISSING LOOK FOR THE MOST SIMILAR INDIVIDUAL 
+# wrt REMAINING VARIABLES 
+# For more robustness average the values of k-NN in general (with small k)
+
+#For several Variables: 
+
+#built indexes of numerical variables that require inputation
+
+uncompletevars<-c(7,8,16,20,15,19,12,21,18)
+
+#better if you sort them by increasing number of missing values
+
+fullvariables<-c(1,2,13,14)
+aux<-dd[,fullvariables]
+dim(aux)
+names(aux)
+
+for (k in uncompletevars){
+  aux1 <- aux[!is.na(dd[,k]),]
+  dim(aux1) 
+  aux2 <- aux[is.na(dd[,k]),]
+  dim(aux2)
+
+  RefValues<- dd[!is.na(dd[,k]),k]
+  #Find nns for aux2
+  knn.values = knn(aux1,aux2,RefValues)   
+
+  #CARE: neither aux1 nor aux2 can contain NAs
+
+  #CARE: knn.ing is generated as a factor. 
+  #Be sure to retrieve the correct values
+
+  dd[is.na(dd[,k]),k] = as.numeric(as.character(knn.values))
+  fullVariables<-c(fullVariables, k)
+  aux<-dd[,fullVariables]
+}
+
+dim(dd)
+summary(dd)
+
+#check for outliers
+#how?
+
+# SAVING THE TRANSFORMATIONS IN A INTERNAL R FILE
+
+save.image("Airbnb")
+
+#saving the dataframe in an external file
+write.table(dd, file = "Airbnb_Open_Data.csv", sep = ",", na = "NA", dec = ".", row.names = FALSE, col.names = TRUE)

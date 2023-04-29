@@ -1,0 +1,29 @@
+setwd("C:/Users/mario/mario/Info/MD")
+dd <- read.csv("KNN+UNKNOWN TAGS.csv", header=T)
+attach(dd)
+
+summary(dd$lat)
+summary(dd$long)
+summary(dd$Construction.year)
+summary(dd$number.of.reviews)
+summary(dd$minimum.nights)
+summary(dd$reviews.per.month)
+summary(dd$price)
+summary(dd$service.fee)
+summary(dd$calculated.host.listings.count)
+summary(dd$review.rate.number)
+summary(dd$availability.365)
+
+dd$availability.365[dd$availability.365 < 0] <- 0
+dd$availability.365[dd$availability.365 > 365] <- 365
+
+dd$minimum.nights[dd$minimum.nights < 0] <- "Ukn_MinN"
+#boxplot(dd$minimum.nights)
+#out <- boxplot.stats(dd$minimum.nights)$out
+#min <- min(out)
+dd$minimum.nights[dd$minimum.nights > 365] <- "Ukn_minN"
+write.table(dd, file = "KNN+UNKNOWN TAGS.csv", sep = ",", na = "NA", dec = ".", row.names = FALSE, col.names = TRUE)
+
+
+
+
